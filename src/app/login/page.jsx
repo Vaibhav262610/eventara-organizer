@@ -37,7 +37,7 @@ const page = () => {
 
                 // Redirect to Discover page after a short delay
                 setTimeout(() => {
-                    window.location.href = "/discover";
+                    window.location.href = "/";
                 }, 1500);
             } else {
                 toast.error(data.error || "Login failed");
@@ -74,6 +74,7 @@ const page = () => {
                         <input
                             type="email"
                             id="email"
+                            placeholder='enter your email'
                             className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -87,6 +88,7 @@ const page = () => {
                             id="password"
                             className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             value={password}
+                            placeholder='enter your password'
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
