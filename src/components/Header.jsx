@@ -1,6 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/navigation"; // Import Next.js router
 
 const Header = () => {
     const [modalStep, setModalStep] = useState(0); // 0 = No modal, 1 = Organizer Type, 2 = Hackathon Mode, 3 = Hackathon Details
@@ -9,8 +12,36 @@ const Header = () => {
     const [university, setUniversity] = useState("");
     const [participationFee, setParticipationFee] = useState("No");
 
+
+    const router = useRouter(); // Initialize Next.js router
     // Check if the "Begin" button should be enabled
     const isFormValid = hackathonName.trim() !== "" && university.trim() !== "";
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Prevent default form submission behavior
+
+        const eventData = { hackathonName, university, participationFee };
+
+        try {
+            const response = await fetch("/api/events/overview", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(eventData),
+            });
+
+            if (response.status === 201) { // Correct way to check response status
+                router.push("/event-creation"); // Redirect immediately on success
+            } else {
+                const data = await response.json();
+                toast.error(data.error || "Something went wrong!");
+            }
+        } catch (error) {
+            console.error("Error submitting event data:", error);
+            toast.error("Failed to create event. Please try again.");
+        }
+    };
+
 
     return (
         <div className="flex flex-col items-center justify-center text-center w-full h-screen bg-gray-900 text-white">
@@ -174,15 +205,61 @@ const Header = () => {
                                 onChange={(e) => setUniversity(e.target.value)}
                                 required
                             />
+                            <h2 className="text-2xl font-bold text-gray-900">Participation Fee</h2>
 
+
+                            {/* Radio Buttons for Yes/No */}
+                            <div className="justify-center gap-4 flex">
+                                <label className={`flex items-center border p-4 rounded-md cursor-pointer transition-all
+                    ${participationFee === "yes" ? "bg-blue-100 border-blue-500" : "hover:bg-gray-100"}`}>
+                                    <input
+                                        type="radio"
+                                        name="participationFee"
+                                        value="yes"
+                                        className="mr-3 hidden"
+                                        checked={participationFee === "yes"}
+                                        onChange={() => setParticipationFee("yes")}
+                                    />
+                                    <div className="flex items-center">
+                                        <div className={`w-5 h-5 border-2 rounded-full flex items-center justify-center mr-3
+                            ${participationFee === "yes" ? "border-blue-500" : "border-gray-400"}`}>
+                                            {participationFee === "yes" && <div className="w-3 h-3 bg-blue-500 rounded-full"></div>}
+                                        </div>
+                                        <h4 className="font-semibold text-lg text-gray-800">Yes</h4>
+                                    </div>
+                                </label>
+
+                                <label className={`flex items-center border p-4 rounded-md cursor-pointer transition-all
+                    ${participationFee === "no" ? "bg-blue-100 border-blue-500" : "hover:bg-gray-100"}`}>
+                                    <input
+                                        type="radio"
+                                        name="participationFee"
+                                        value="no"
+                                        className="mr-3 hidden"
+                                        checked={participationFee === "no"}
+                                        onChange={() => setParticipationFee("no")}
+                                    />
+                                    <div className="flex items-center">
+                                        <div className={`w-5 h-5 border-2 rounded-full flex items-center justify-center mr-3
+                            ${participationFee === "no" ? "border-blue-500" : "border-gray-400"}`}>
+                                            {participationFee === "no" && <div className="w-3 h-3 bg-blue-500 rounded-full"></div>}
+                                        </div>
+                                        <h4 className="font-semibold text-lg text-gray-800">No</h4>
+                                    </div>
+                                </label>
+                            </div>
                             <div className="flex justify-between mt-6">
-                                <button className="bg-green-500 text-white px-6 py-3 rounded-md font-semibold">
-                                    Cancel
+                                <button
+                                    className="bg-gray-400 text-white px-6 py-3 rounded-md font-semibold"
+                                    onClick={() => setModalStep(2)}
+                                >
+                                    Back
                                 </button>
                                 <button
                                     className={`px-6 py-3 rounded-md font-semibold ${isFormValid ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                         }`}
                                     disabled={!isFormValid}
+                                    onClick={handleSubmit} // Send the event data to MongoDB
                                 >
                                     Begin
                                 </button>
