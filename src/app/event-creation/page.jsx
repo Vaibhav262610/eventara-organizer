@@ -32,10 +32,10 @@ const Page = () => {
         announcementResultsDate: null,
         partners: [],
         prizes: [],
-        faqs: [
-            { question: "Eg. What is the eligibility criteria?", answer: "The hackathon is open to anyone with a passion for coding." },
-
-        ],
+        faqs: [{
+            question: "Eg. What is the eligibility criteria?",
+            answer: "The hackathon is open to anyone with a passion for coding."
+        }]
     });
 
     const handleChange = (e) => {
@@ -87,14 +87,20 @@ const Page = () => {
     const addPartner = () => {
         const partnerName = prompt("Enter partner name:");
         if (partnerName) {
-            setFormData((prev) => ({ ...prev, partners: [...prev.partners, partnerName] }));
+            setFormData(prev => ({
+                ...prev,
+                partners: [...prev.partners, partnerName]
+            }));
         }
     };
 
     const addPrize = () => {
         const prize = prompt("Enter prize description:");
         if (prize) {
-            setFormData((prev) => ({ ...prev, prizes: [...prev.prizes, prize] }));
+            setFormData(prev => ({
+                ...prev,
+                prizes: [...prev.prizes, prize]
+            }));
         }
     };
 
@@ -102,33 +108,54 @@ const Page = () => {
         const question = prompt("Enter FAQ question:");
         const answer = prompt("Enter FAQ answer:");
         if (question && answer) {
-            setFormData((prev) => ({
+            setFormData(prev => ({
                 ...prev,
                 faqs: [...prev.faqs, { question, answer }]
             }));
         }
     };
+
     const handlePublish = async () => {
         try {
-            // Ensure formData is properly spread
-            const processedEventData = {
-                ...formData,
-                participants: formData.participants ? String(formData.participants) : "",
-                minTeamSize: formData.minTeamSize ? String(formData.minTeamSize) : "",
-                maxTeamSize: formData.maxTeamSize ? String(formData.maxTeamSize) : "",
-                applicationOpenDate: formData.applicationOpenDate ? String(formData.applicationOpenDate) : "",
-                hackathonStartDate: formData.hackathonStartDate ? String(formData.hackathonStartDate) : "",
-                submissionDeadlineDate: formData.submissionDeadlineDate ? String(formData.submissionDeadlineDate) : "",
-                announcementResultsDate: formData.announcementResultsDate ? String(formData.announcementResultsDate) : "",
-            };
-
-            console.log('Processed eventData:', processedEventData);
-
-            // Validate the form data if necessary
+            // Validate the form data
             if (!isBasicsFilled()) {
                 alert("Please fill all fields in the Basics section before publishing.");
                 return;
             }
+
+            // Format platforms data correctly
+            const formattedPlatforms = formData.platforms.map(platform => ({
+                name: platform.name,
+                url: platform.url
+            }));
+
+            // Format FAQs data correctly
+            const formattedFaqs = formData.faqs.map(faq => ({
+                question: faq.question,
+                answer: faq.answer
+            }));
+
+            // Convert all data to strings and format for API
+            const processedEventData = {
+                name: String(formData.name),
+                tagline: String(formData.tagline),
+                about: String(formData.about),
+                participants: String(formData.participants),
+                minTeamSize: String(formData.minTeamSize),
+                maxTeamSize: String(formData.maxTeamSize),
+                contactEmail: String(formData.contactEmail),
+                platforms: formattedPlatforms,
+                applicationOpenDate: formData.applicationOpenDate ? formData.applicationOpenDate.toISOString() : "",
+                applicationOpenTime: String(formData.applicationOpenTime),
+                hackathonStartDate: formData.hackathonStartDate ? formData.hackathonStartDate.toISOString() : "",
+                submissionDeadlineDate: formData.submissionDeadlineDate ? formData.submissionDeadlineDate.toISOString() : "",
+                announcementResultsDate: formData.announcementResultsDate ? formData.announcementResultsDate.toISOString() : "",
+                partners: formData.partners,
+                prizes: formData.prizes,
+                faqs: formattedFaqs
+            };
+
+            console.log('Sending event data:', processedEventData);
 
             const response = await fetch('/api/events/event-creation', {
                 method: 'POST',
@@ -136,25 +163,28 @@ const Page = () => {
                 body: JSON.stringify(processedEventData),
             });
 
-            // Check if response is valid JSON
-            let result;
-            try {
-                result = await response.json();
-            } catch (jsonError) {
-                console.error('Failed to parse JSON response:', jsonError);
-                alert("Unexpected server response. Check the server logs.");
-                return;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
+            const result = await response.json();
             console.log('API Response:', result);
-            alert("Event published successfully!");
+
+            // Check if result exists and has required data
+            if (result && result.message) {
+                alert(result.message);
+                // Log the full response to debug
+                console.log('Full API Response:', result);
+            } else {
+                throw new Error('Invalid response format from API');
+            }
 
         } catch (error) {
             console.error('Error publishing event:', error);
-            alert("Failed to publish event.");
+            alert(`Failed to publish event: ${error.message}`);
         }
     };
-
 
     return (
         <div className="min-h-screen p-6">
