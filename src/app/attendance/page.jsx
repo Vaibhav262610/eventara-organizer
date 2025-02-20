@@ -1,10 +1,18 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import QRCode from "qrcode";
 
-export default function QRGenerator() {
+export default function AttendancePage() {
+    return (
+        <Suspense fallback={<p>Loading...</p>}>
+            <AttendanceContent />
+        </Suspense>
+    );
+}
+
+function AttendanceContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [attendance, setAttendance] = useState("None");
@@ -12,13 +20,12 @@ export default function QRGenerator() {
     const [qrImage, setQrImage] = useState("");
 
     useEffect(() => {
-        // Check if the URL contains ?attended=true
         if (searchParams.get("attended") === "true") {
             setAttendance("Present");
         }
 
-        // Generate the QR code URL
-        const url = `${window.location.origin}?attended=true`;
+        // Generate the QR code URL dynamically
+        const url = `${window.location.origin}/attendance?attended=true`;
         setQrUrl(url);
 
         // Generate QR code image
@@ -30,8 +37,7 @@ export default function QRGenerator() {
     }, [searchParams]);
 
     return (
-        <div className="flex justify-center items-center h-screen w-full">
-
+        <div className='w-full h-screen justify-center items-center flex text-white'>
             <div className="flex flex-col items-center p-4">
                 <h1 className="text-2xl font-bold">QR Attendance System</h1>
 
@@ -48,7 +54,7 @@ export default function QRGenerator() {
 
                 <button
                     className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-                    onClick={() => router.push("/")}
+                    onClick={() => router.push("/attendance")}
                 >
                     Reset Attendance
                 </button>
