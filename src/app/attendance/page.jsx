@@ -16,7 +16,6 @@ function AttendanceContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [attendance, setAttendance] = useState("None");
-    const [qrUrl, setQrUrl] = useState("");
     const [qrImage, setQrImage] = useState("");
 
     useEffect(() => {
@@ -24,12 +23,11 @@ function AttendanceContent() {
             setAttendance("Present");
         }
 
-        // Generate the QR code URL dynamically
-        const url = `${window.location.origin}/attendance?attended=true`;
-        setQrUrl(url);
+        // Generate QR code with the external website URL
+        const qrUrl = `https://eventara-organizer.vercel.app/?attended=true`;
 
-        // Generate QR code image
-        QRCode.toDataURL(url)
+        // Convert URL to QR Code
+        QRCode.toDataURL(qrUrl)
             .then((dataUrl) => {
                 setQrImage(dataUrl);
             })
