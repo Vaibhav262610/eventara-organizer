@@ -42,10 +42,11 @@ const Navbar = () => {
     return (
         <div className={`fixed top-0 left-0 w-full transition-all duration-300 z-50 ${isScrolled ? "bg-[#0a0a0a] shadow-lg" : "bg-transparent"}`}>
             <div className="flex w-full justify-evenly items-center py-5">
-                <Link href="/">
-                    <h1 ref={logoRef} className="text-4xl font-black text-white cursor-grab">
-                        Eventara. <span className="text-xs font-normal">organizer</span>
+                <Link ref={logoRef} href="/" className='cursor-grab'>
+                    <h1 className="text-4xl font-black text-white ">
+                        Eventara.
                     </h1>
+                    <h2 className=" text-white text-xs font-normal ">organizer</h2>
                 </Link>
 
                 <div className="text-xl font-semibold gap-12 flex">
