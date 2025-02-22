@@ -1,11 +1,19 @@
-// /lib/mongoose.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const connectToDatabase = async () => {
-    if (mongoose.connections[0].readyState) {
+const MONGO_URI = process.env.MONGODB_URI; // Ensure this is defined in .env file
+
+export const connectToDatabase = async () => {
+    if (mongoose.connection.readyState >= 1) {
         return; // Already connected
     }
-    await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    try {
+        await mongoose.connect(MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log("MongoDB Connected");
+    } catch (error) {
+        console.error("MongoDB connection error:", error);
+        throw new Error("Database connection failed");
+    }
 };
-
-export default connectToDatabase;

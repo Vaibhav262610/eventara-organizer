@@ -1,21 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { useState } from "react";
 
-const sectionKeys = [
-    "BASICS",
-    "APPLICATION",
-    "LINKS",
-    "DATES",
-    "PARTNERS",
-    "PRIZES",
-    "SCHEDULE",
-    "FAQS",
-];
-
-const Page = () => {
-    const [activeIndex, setActiveIndex] = useState(0);
+const EventForm = () => {
     const [formData, setFormData] = useState({
         name: "",
         tagline: "",
@@ -23,446 +9,252 @@ const Page = () => {
         participants: "",
         minTeamSize: "",
         maxTeamSize: "",
-        contactEmail: "",
-        platforms: [{ name: "Twitter", url: "" }, { name: "Discord", url: "" }, { name: "Github", url: "" }, { name: "LinkedIn", url: "" }, { name: "Instagram", url: "" }, { name: "Facebook", url: "" }],
-        applicationOpenDate: null,
-        applicationOpenTime: "",
-        hackathonStartDate: null,
-        submissionDeadlineDate: null,
-        announcementResultsDate: null,
-        partners: [],
-        prizes: [],
-        faqs: [{
-            question: "Eg. What is the eligibility criteria?",
-            answer: "The hackathon is open to anyone with a passion for coding."
-        }]
+        faqs: [] // ✅ Ensure FAQs is an array
     });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+    const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
+    const [activeSection, setActiveSection] = useState("general"); // State for active section
+
+    const [links, setLinks] = useState({
+        github: "",
+        facebook: "",
+        linkedin: "",
+        twitter: "",
+        instagram: ""
+    });
+
+    // Add FAQ to the array
+    const addFaq = () => {
+        if (faqInput.question && faqInput.answer) {
+            setFormData(prevState => ({
+                ...prevState,
+                faqs: [...prevState.faqs, faqInput] // Ensures array format
+            }));
+            setFaqInput({ question: "", answer: "" }); // Reset input fields
+        }
     };
 
-    const handlePlatformChange = (index, e) => {
-        const { name, value } = e.target;
-        const newPlatforms = [...formData.platforms];
-        newPlatforms[index][name] = value;
-        setFormData({ ...formData, platforms: newPlatforms });
+    // Remove FAQ from array
+    const removeFaq = (index) => {
+        setFormData(prevState => ({
+            ...prevState,
+            faqs: prevState.faqs.filter((_, i) => i !== index)
+        }));
     };
 
-    const handleDateChange = (name, date) => {
-        setFormData((prev) => ({ ...prev, [name]: date }));
+    // Submit form to API
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        console.log("Submitting Data:", JSON.stringify(formData, null, 2)); // Debugging
+
+        const response = await fetch("/api/events/event-creation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+        console.log("Response:", data);
     };
 
+    // Handle next and previous section navigation
     const handleNext = () => {
-        if (activeIndex === 0 && !isBasicsFilled()) {
-            alert("Please fill all fields in the Basics section before proceeding.");
-            return;
-        }
-        if (activeIndex < sectionKeys.length - 1) {
-            setActiveIndex(activeIndex + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        if (activeIndex > 0) {
-            setActiveIndex(activeIndex - 1);
+        const sections = [
+            "basic", "links", "dates", "partners", "prizes", "schedule", "faq"
+        ];
+        const currentIndex = sections.indexOf(activeSection);
+        if (currentIndex < sections.length - 1) {
+            setActiveSection(sections[currentIndex + 1]);
         }
     };
 
-    // Validation functions
-    const isBasicsFilled = () => {
-        const { name, tagline, about, participants, minTeamSize, maxTeamSize } = formData;
-        return (
-            name.trim() !== "" &&
-            tagline.trim() !== "" &&
-            about.trim() !== "" &&
-            participants.trim() !== "" &&
-            minTeamSize.trim() !== "" &&
-            maxTeamSize.trim() !== ""
-        );
-    };
-
-    // Add to-do text for partners and prizes
-    const addPartner = () => {
-        const partnerName = prompt("Enter partner name:");
-        if (partnerName) {
-            setFormData(prev => ({
-                ...prev,
-                partners: [...prev.partners, partnerName]
-            }));
-        }
-    };
-
-    const addPrize = () => {
-        const prize = prompt("Enter prize description:");
-        if (prize) {
-            setFormData(prev => ({
-                ...prev,
-                prizes: [...prev.prizes, prize]
-            }));
-        }
-    };
-
-    const addFAQ = () => {
-        const question = prompt("Enter FAQ question:");
-        const answer = prompt("Enter FAQ answer:");
-        if (question && answer) {
-            setFormData(prev => ({
-                ...prev,
-                faqs: [...prev.faqs, { question, answer }]
-            }));
-        }
-    };
-
-    const handlePublish = async () => {
-        try {
-            // Validate the form data
-            if (!isBasicsFilled()) {
-                alert("Please fill all fields in the Basics section before publishing.");
-                return;
-            }
-
-            // Format platforms data correctly
-            const formattedPlatforms = formData.platforms.map(platform => ({
-                name: platform.name,
-                url: platform.url
-            }));
-
-            // Format FAQs data correctly
-            const formattedFaqs = formData.faqs.map(faq => ({
-                question: faq.question,
-                answer: faq.answer
-            }));
-
-            // Convert all data to strings and format for API
-            const processedEventData = {
-                name: String(formData.name),
-                tagline: String(formData.tagline),
-                about: String(formData.about),
-                participants: String(formData.participants),
-                minTeamSize: String(formData.minTeamSize),
-                maxTeamSize: String(formData.maxTeamSize),
-                contactEmail: String(formData.contactEmail),
-                platforms: formattedPlatforms,
-                applicationOpenDate: formData.applicationOpenDate ? formData.applicationOpenDate.toISOString() : "",
-                applicationOpenTime: String(formData.applicationOpenTime),
-                hackathonStartDate: formData.hackathonStartDate ? formData.hackathonStartDate.toISOString() : "",
-                submissionDeadlineDate: formData.submissionDeadlineDate ? formData.submissionDeadlineDate.toISOString() : "",
-                announcementResultsDate: formData.announcementResultsDate ? formData.announcementResultsDate.toISOString() : "",
-                partners: formData.partners,
-                prizes: formData.prizes,
-                faqs: formattedFaqs
-            };
-
-            console.log('Sending event data:', processedEventData);
-
-            const response = await fetch('/api/events/event-creation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(processedEventData),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('API Response:', result);
-
-            // Check if result exists and has required data
-            if (result && result.message) {
-                alert(result.message);
-                // Log the full response to debug
-                console.log('Full API Response:', result);
-            } else {
-                throw new Error('Invalid response format from API');
-            }
-
-        } catch (error) {
-            console.error('Error publishing event:', error);
-            alert(`Failed to publish event: ${error.message}`);
+    const handlePrevious = () => {
+        const sections = [
+            "basic", "links", "dates", "partners", "prizes", "schedule", "faq"
+        ];
+        const currentIndex = sections.indexOf(activeSection);
+        if (currentIndex > 0) {
+            setActiveSection(sections[currentIndex - 1]);
         }
     };
 
     return (
-        <div className="min-h-screen p-6">
-            <div className="max-w-4xl mt-40 mx-auto p-6 rounded-lg">
-                <div className="flex justify-between mb-4">
-                    <h2 className="text-4xl text-[#34D399] nav font-light">vaibhav</h2>
-                </div>
-
-                {/* Navigation Tabs */}
-                <nav className="flex space-x-4 border-b pb-2 mb-4 mt-12">
-                    {sectionKeys.map((tab, index) => (
+        <div className="flex justify-center items-center h-[110vh]  w-full ">
+            <div className="absolute inset-0 w-full h-full bg-[radial-gradient(circle,rgba(255,255,255,0.15)_2px,transparent_1px)] z-40 bg-[size:40px_40px] opacity-30"></div>
+            <div className="bg-gray-800 p-8 rounded-lg shadow-xl z-50 w-fit">
+                {/* Sidebar for selecting sections */}
+                <div className="flex items-center bg-gray-700 py-4  px-8 rounded-md shadow-lg justify-center gap-10 mb-8 z-50">
+                    {["basic", "links", "dates", "partners", "prizes", "schedule", "faq"].map((section) => (
                         <button
-                            key={tab}
-                            className={`px-3 py-1 rounded-lg tracking-widest text-sm hover:text-blue-500 ${activeIndex === index ? "text-blue-500" : "text-gray-300"
-                                }`}
-                            onClick={() => {
-                                if (index === 0 || (index === 2) || (index === 0 && isBasicsFilled())) {
-                                    setActiveIndex(index);
-                                }
-                            }}
+                            key={section}
+                            className={`nav text-sm font-thin tracking-widest text-white py-2 px-6 rounded-md transition duration-300
+                          ${activeSection === section ? 'text-blue-400' : 'hover:text-gray-600'}`}
+                            onClick={() => setActiveSection(section)}
                         >
-                            {tab}
+                            {section.toUpperCase()}
                         </button>
                     ))}
-                </nav>
+                </div>
 
-                {/* Section Content */}
-                <div>
-                    {sectionKeys[activeIndex] === "BASICS" ? (
-                        <form className="space-y-4">
+                {/* Conditional rendering of sections */}
+                <form onSubmit={handleSubmit}>
+                    {activeSection === "basic" && (
+                        <div className="z-50 grid grid-cols-1 gap-6">
                             <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Name
-                                </label>
+                                <label className="text-white/70 text-lg mb-2">Event Name:</label>
                                 <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     type="text"
                                     name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    placeholder="Event Name"
+                                    required
                                 />
                             </div>
                             <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Tagline
-                                </label>
+                                <label className="text-white/70 text-lg mb-2">Tagline:</label>
                                 <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     type="text"
                                     name="tagline"
-                                    value={formData.tagline}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                                    onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                                    placeholder="Tagline"
+                                    required
                                 />
                             </div>
                             <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    About
-                                </label>
+                                <label className="text-white/70 text-lg mb-2">About:</label>
                                 <textarea
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     name="about"
-                                    value={formData.about}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                                    rows="4"
-                                ></textarea>
+                                    onChange={(e) => setFormData({ ...formData, about: e.target.value })}
+                                    placeholder="About the Event"
+                                    required
+                                />
                             </div>
                             <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Approximate Participants
-                                </label>
+                                <label className="text-white/70 text-lg mb-2">Total Participants:</label>
                                 <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     type="number"
                                     name="participants"
-                                    value={formData.participants}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                                    onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
+                                    placeholder="Total Participants"
+                                    required
                                 />
                             </div>
                             <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Minimum Team Size Allowed
-                                </label>
+                                <label className="text-white/70 text-lg mb-2">Min Team Size:</label>
                                 <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     type="number"
                                     name="minTeamSize"
-                                    value={formData.minTeamSize}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                                    onChange={(e) => setFormData({ ...formData, minTeamSize: e.target.value })}
+                                    placeholder="Min Team Size (1-2)"
+                                    required
                                 />
                             </div>
                             <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Maximum Team Size Allowed
-                                </label>
+                                <label className="text-white/70 text-lg mb-2">Max Team Size:</label>
                                 <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     type="number"
                                     name="maxTeamSize"
-                                    value={formData.maxTeamSize}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                                    onChange={(e) => setFormData({ ...formData, maxTeamSize: e.target.value })}
+                                    placeholder="Max Team Size (1-5)"
+                                    required
                                 />
-                            </div>
-                        </form>
-                    ) : sectionKeys[activeIndex] === "LINKS" ? (
-                        <form className="space-y-4">
-                            <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Contact Email
-                                </label>
-                                <input
-                                    type="email"
-                                    name="contactEmail"
-                                    value={formData.contactEmail}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                                />
-                            </div>
-                            {formData.platforms.map((platform, index) => (
-                                <div key={index} className="space-y-2">
-                                    <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                        {platform.name} URL
-                                    </label>
-                                    <input
-                                        type="url"
-                                        name="url"
-                                        value={platform.url}
-                                        onChange={(e) => handlePlatformChange(index, e)}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                                    />
-                                </div>
-                            ))}
-                        </form>
-                    ) : sectionKeys[activeIndex] === "DATES" ? (
-                        <form className="space-y-4">
-                            <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Application Open Date
-                                </label>
-                                <DatePicker
-                                    selected={formData.applicationOpenDate}
-                                    onChange={(date) => handleDateChange('applicationOpenDate', date)}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                                    dateFormat="yyyy/MM/dd"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Application Open Time
-                                </label>
-                                <select
-                                    name="applicationOpenTime"
-                                    value={formData.applicationOpenTime}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                                >
-                                    <option value="">Select Time</option>
-                                    {Array.from({ length: 24 }, (_, index) => {
-                                        const hour = index < 10 ? `0${index}` : index;
-                                        return <option key={hour} value={`${hour}:00`}>{`${hour}:00`}</option>;
-                                    })}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Hackathon Start Date
-                                </label>
-                                <DatePicker
-                                    selected={formData.hackathonStartDate}
-                                    onChange={(date) => handleDateChange('hackathonStartDate', date)}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                                    dateFormat="yyyy/MM/dd"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Submission Deadline Date
-                                </label>
-                                <DatePicker
-                                    selected={formData.submissionDeadlineDate}
-                                    onChange={(date) => handleDateChange('submissionDeadlineDate', date)}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                                    dateFormat="yyyy/MM/dd"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-md mb-2 tracking-widest text-gray-400">
-                                    Results Announcement Date
-                                </label>
-                                <DatePicker
-                                    selected={formData.announcementResultsDate}
-                                    onChange={(date) => handleDateChange('announcementResultsDate', date)}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                                    dateFormat="yyyy/MM/dd"
-                                />
-                            </div>
-                        </form>
-                    ) : sectionKeys[activeIndex] === "PARTNERS" ? (
-                        <div>
-                            <button
-                                type="button"
-                                onClick={addPartner}
-                                className="px-6 py-2 rounded-md bg-blue-500 text-white"
-                            >
-                                Add Partner
-                            </button>
-                            <ul className="mt-4">
-                                {formData.partners.map((partner, index) => (
-                                    <li key={index} className="text-gray-300">{partner}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ) : sectionKeys[activeIndex] === "PRIZES" ? (
-                        <div>
-                            <button
-                                type="button"
-                                onClick={addPrize}
-                                className="px-6 py-2 rounded-md bg-blue-500 text-white"
-                            >
-                                Add Prize
-                            </button>
-                            <ul className="mt-4">
-                                {formData.prizes.map((prize, index) => (
-                                    <li key={index} className="text-gray-300">{prize}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ) : sectionKeys[activeIndex] === "FAQS" ? (
-                        <div>
-                            <button
-                                type="button"
-                                onClick={addFAQ}
-                                className="px-6 py-2 rounded-md bg-blue-500 text-white"
-                            >
-                                Add FAQ
-                            </button>
-                            <div className="mt-4">
-                                {formData.faqs.map((faq, index) => (
-                                    <div key={index} className="text-gray-300 mb-2">
-                                        <strong>Q: </strong>{faq.question}
-                                        <br />
-                                        <strong>A: </strong>{faq.answer}
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex justify-center mt-6">
-                                <button
-                                    onClick={handlePublish}
-                                    className="px-6 py-2 rounded-md bg-green-500 text-white"
-                                >
-                                    Publish
-                                </button>
                             </div>
                         </div>
-                    ) : (
-                        <div className="text-white nav">Coming Soon...</div>
                     )}
-                </div>
 
-                {/* Navigation Buttons */}
-                <div className="flex justify-center gap-5 mt-6">
-                    <button
-                        onClick={handlePrev}
-                        disabled={activeIndex === 0}
-                        className="px-6 py-2 nav rounded-md bg-gray-700 text-white disabled:bg-gray-400"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        onClick={handleNext}
-                        disabled={activeIndex === sectionKeys.length - 1}
-                        className="px-6 py-2 nav rounded-md bg-blue-500 text-white disabled:bg-gray-400"
-                    >
-                        Next
-                    </button>
-                </div>
+                    {activeSection === "links" && (
+                        <div className="z-50 grid grid-cols-1 gap-6">
+                            <div>
+                                <h1 className="text-white text-xl mb-2">GitHub:</h1>
+                                <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    type="text"
+                                    name="github"
+                                    value={links.github}
+                                    onChange={(e) => setLinks({ ...links, github: e.target.value })}
+                                    placeholder="GitHub Link"
+                                />
+                            </div>
+                            <div>
+                                <h1 className="text-white text-xl mb-2">Facebook:</h1>
+                                <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    type="text"
+                                    name="facebook"
+                                    value={links.facebook}
+                                    onChange={(e) => setLinks({ ...links, facebook: e.target.value })}
+                                    placeholder="Facebook Link"
+                                />
+                            </div>
+                            <div>
+                                <h1 className="text-white text-xl mb-2">LinkedIn:</h1>
+                                <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    type="text"
+                                    name="linkedin"
+                                    value={links.linkedin}
+                                    onChange={(e) => setLinks({ ...links, linkedin: e.target.value })}
+                                    placeholder="LinkedIn Link"
+                                />
+                            </div>
+                            <div>
+                                <h1 className="text-white text-xl mb-2">Twitter:</h1>
+                                <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    type="text"
+                                    name="twitter"
+                                    value={links.twitter}
+                                    onChange={(e) => setLinks({ ...links, twitter: e.target.value })}
+                                    placeholder="Twitter Link"
+                                />
+                            </div>
+                            <div>
+                                <h1 className="text-white text-xl mb-2">Instagram:</h1>
+                                <input
+                                    className="w-full px-6 py-3 rounded-lg text-sm bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    type="text"
+                                    name="instagram"
+                                    value={links.instagram}
+                                    onChange={(e) => setLinks({ ...links, instagram: e.target.value })}
+                                    placeholder="Instagram Link"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Button Section */}
+                    <div className="flex justify-between gap-4 mt-6">
+                        <button
+                            type="button"
+                            className="bg-gray-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-gray-500"
+                            onClick={handlePrevious}
+                        >
+                            Previous
+                        </button>
+                        <button
+                            type="button"
+                            className="bg-blue-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-blue-500"
+                            onClick={handleNext}
+                        >
+                            Next
+                        </button>
+                        <button
+                            type="submit"
+                            className="bg-green-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-green-500"
+                        >
+                            Submit
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
 };
 
-export default Page;
+export default EventForm;
