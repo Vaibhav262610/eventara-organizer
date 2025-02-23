@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const EventSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -7,17 +7,13 @@ const EventSchema = new mongoose.Schema({
     participants: { type: String, required: true },
     minTeamSize: { type: String, required: true },
     maxTeamSize: { type: String, required: true },
-
-    // ✅ Ensure FAQs is an array with default empty array
-    faqs: {
-        type: [
-            {
-                question: { type: String, required: true },
-                answer: { type: String, required: true }
-            }
-        ],
-        default: [] // ✅ This ensures FAQs is always an array
-    }
+    status: { type: String, required: true },
+    location: { type: String, required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    faqs: [{ type: mongoose.Schema.Types.ObjectId, ref: "FAQ" }],
+    // prizes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Prizes" }],
+    // partners: [{ type: mongoose.Schema.Types.ObjectId, ref: "Partners" }]
 });
 
 export default mongoose.models.Event || mongoose.model("Event", EventSchema);

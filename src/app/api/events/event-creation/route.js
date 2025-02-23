@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/db/db";
 import Event from "@/models/event.models";
 import FAQ from "@/models/faq.models"; // ✅ Import FAQ model
+// import Prizes from "@/models/prizes.models"; // ✅ Import FAQ model
 
 export async function POST(req) {
     try {
@@ -15,10 +16,15 @@ export async function POST(req) {
             about: body.about,
             participants: body.participants,
             minTeamSize: body.minTeamSize,
-            maxTeamSize: body.maxTeamSize
+            maxTeamSize: body.maxTeamSize,
+            location: body.location,
+            endDate: body.endDate,
+            startDate: body.startDate,
+            status: body.status
         });
 
         let insertedFaqs = [];
+        // let insertedPrizes = [];
 
         // ✅ Save each FAQ separately in FAQ collection
         if (Array.isArray(body.faqs) && body.faqs.length > 0) {
