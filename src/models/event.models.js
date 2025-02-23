@@ -12,7 +12,8 @@ const EventSchema = new mongoose.Schema({
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     faqs: [{ type: mongoose.Schema.Types.ObjectId, ref: "FAQ" }],
-    // prizes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Prizes" }],
+    partners: [{ type: mongoose.Schema.Types.ObjectId, ref: "Partners" }],
+    prizes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Prizes" }],
     // partners: [{ type: mongoose.Schema.Types.ObjectId, ref: "Partners" }]
 });
 
