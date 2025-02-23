@@ -26,9 +26,9 @@ export async function POST(req) {
             endDate: body.endDate,
             startDate: body.startDate,
             status: body.status,
+            prizes: [],
             faqs: [],
             partners: [],
-            prizes: []
         });
 
         // ✅ Save FAQs and store their IDs
@@ -50,7 +50,7 @@ export async function POST(req) {
                     name: partner.name,
                     type: partner.type,
                     description: partner.description,
-                    logoUrl: partner.logoUrl || null
+                    // logoUrl: partner.logoUrl || null
                 }))
             );
         }
@@ -62,23 +62,27 @@ export async function POST(req) {
                     eventId: newEvent._id,
                     title: prize.title,
                     amount: prize.amount,
-                    description: prize.description
+                    description: prize.description,
+                    // logoUrl: partner.logoUrl || null
                 }))
             );
         }
+        // let prizesData = newEvent.prizes
 
         // ✅ Update the Event with inserted IDs
         newEvent.faqs = insertedFaqs.map(faq => faq._id);
         newEvent.partners = insertedPartners.map(partner => partner._id);
+        // hereeeeee erorrrrrr
         newEvent.prizes = insertedPrizes.map(prize => prize._id);
         await newEvent.save(); // Save the updated event
 
         return NextResponse.json({
             message: "Event created with FAQs, Partners, and Prizes",
             event: newEvent,
-            faqs: insertedFaqs,
-            partners: insertedPartners,
-            prizes: insertedPrizes
+            // prizes: newEvent.prizes
+            // faqs: insertedFaqs,
+            // partners: insertedPartners,
+            // prizes: insertedPrizes
         }, { status: 201 });
 
     } catch (error) {

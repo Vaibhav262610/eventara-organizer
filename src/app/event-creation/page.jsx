@@ -10,35 +10,38 @@ const EventForm = () => {
         minTeamSize: "",
         maxTeamSize: "",
         location: "",
+        endDate: "",
+        startDate: "",
+        status: "",
         faqs: [],
         partners: [],
         prizes: []
     });
 
     const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
-    const [partnerInput, setPartnerInput] = useState("");
+    const [partnerInput, setPartnerInput] = useState({ name: "", type: "", description: "" });
     const [prizeInput, setPrizeInput] = useState("");
     const [activeSection, setActiveSection] = useState("basic");
 
-    const addPartner = () => {
-        if (partnerInput) {
-            setFormData(prevState => ({
-                ...prevState,
-                partners: [...(prevState.partners || []), partnerInput]  // Ensure it's an array
-            }));
-            setPartnerInput("");
-        }
-    };
+    // const addPartner = () => {
+    //     if (partnerInput) {
+    //         setFormData(prevState => ({
+    //             ...prevState,
+    //             partners: [...(prevState.partners || []), partnerInput]  // Ensure it's an array
+    //         }));
+    //         setPartnerInput("");
+    //     }
+    // };
 
-    const addPrize = () => {
-        if (prizeInput) {
-            setFormData(prevState => ({
-                ...prevState,
-                prizes: [...(prevState.prizes || []), prizeInput]
-            }));
-            setPrizeInput("");
-        }
-    };
+    // const addPrize = () => {
+    //     if (prizeInput) {
+    //         setFormData(prevState => ({
+    //             ...prevState,
+    //             prizes: [...(prevState.prizes || []), prizeInput]
+    //         }));
+    //         setPrizeInput("");
+    //     }
+    // };
 
     const [links, setLinks] = useState({
         github: "",
@@ -56,7 +59,8 @@ const EventForm = () => {
         timings: ""
     });
 
-    const addFaq = () => {
+    const addFaq = (e) => {
+        e.preventDefault();
         if (faqInput.question && faqInput.answer) {
             setFormData(prevState => ({
                 ...prevState,
@@ -66,27 +70,77 @@ const EventForm = () => {
             setFaqInput({ question: "", answer: "" });
         }
     };
-
-    const removeFaq = (index) => {
-        setFormData(prevState => ({
-            ...prevState,
-            faqs: prevState.faqs.filter((_, i) => i !== index)
-        }));
+    const addPartner = (e) => {
+        e.preventDefault();
+        if (partnerInput.name && partnerInput.type && partnerInput.description) {
+            setFormData(prevState => ({
+                ...prevState,
+                // faqs: [...prevState.faqs, faqInput]
+                partners: [...(prevState.partners || []), partnerInput]
+            }));
+            setPartnerInput({ name: "", type: "", description: "" });
+        }
+    };
+    const addPrize = (e) => {
+        e.preventDefault();
+        if (prizeInput.title && prizeInput.amount && prizeInput.description) {
+            setFormData(prevState => ({
+                ...prevState,
+                // faqs: [...prevState.faqs, faqInput]
+                prizes: [...(prevState.prizes || []), prizeInput]
+            }));
+            setPrizeInput({ title: "", amount: "", description: "" });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Submitting Data:", JSON.stringify(formData, null, 2));
 
+        // Constructing the formData object for submission
+        const formattedData = {
+            name: formData.name,
+            tagline: formData.tagline,
+            about: formData.about,
+            participants: formData.participants,
+            minTeamSize: formData.minTeamSize,
+            maxTeamSize: formData.maxTeamSize,
+            location: "chandigarh",
+            startDate: dates.eventStart,
+            endDate: dates.eventEnd,
+            status: "active",
+            faqs: formData.faqs,
+            partners: formData.partners,
+            prizes: formData.prizes,
+            // Add any additional data fields here, if needed
+            registrationStart: dates.registrationStart,
+            registrationClose: dates.registrationClose,
+            eventStart: dates.eventStart,
+            eventEnd: dates.eventEnd,
+            timings: dates.timings,
+            socialLinks: links // Assuming links are part of the API
+        };
+
+        // Logging data for debugging
+        console.log("Submitting Data:", JSON.stringify(formattedData, null, 2));
+
+        // Sending request to the API
         const response = await fetch("/api/events/event-creation", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
+            body: JSON.stringify(formattedData),
         });
 
         const data = await response.json();
-        console.log("Response:", data);
+
+        if (response.ok) {
+            // Handle success response (e.g., show success message)
+            console.log("Response:", data);
+        } else {
+            // Handle failure response (e.g., show error message)
+            console.error("Error:", data);
+        }
     };
+
 
     const handleNext = () => {
         const sections = [
@@ -288,42 +342,56 @@ const EventForm = () => {
                     )}
                     {activeSection === "partners" && (
                         <div>
-                            <button onClick={() => setPartnerInput(" ")} className="bg-blue-500 text-white px-4 py-2 rounded">Add Partner</button>
-                            {partnerInput !== "" && (
-                                <div className="mt-4">
-                                    <input type="text" value={partnerInput} onChange={(e) => setPartnerInput(e.target.value)} className="px-4 py-2 rounded bg-gray-700 text-white" />
+                            <button type="button" onClick={() => setPartnerInput(partnerInput.name === "" && partnerInput.type === "" && partnerInput.description === "" ? { name: " ", type: " ", description: " " } : partnerInput)} className="bg-blue-500 text-white px-4 py-2 rounded">Add Partner</button>
+
+                            {(partnerInput.name !== "" || partnerInput.type !== "" && partnerInput.description !== "") && (
+                                <div className="mt-4 flex gap-4">
+                                    <input type="text" placeholder="name" value={partnerInput.name} onChange={(e) => setPartnerInput({ ...partnerInput, name: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white mb-2" />
+                                    <input type="text" placeholder="type" value={partnerInput.type} onChange={(e) => setPartnerInput({ ...partnerInput, type: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
+                                    <input type="text" placeholder="description" value={partnerInput.description} onChange={(e) => setPartnerInput({ ...partnerInput, description: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
                                     <button onClick={addPartner} className="bg-green-500 text-white px-4 py-2 ml-2 rounded">Save</button>
                                 </div>
                             )}
                             <ul className="mt-4 text-white">
-                                {formData?.partners?.map((partner, index) => (
-                                    <li key={index}>{partner}</li>
+                                {formData.partners.map((partner, index) => (
+                                    <li key={index}>{partner.name}: {partner.type} : {partner.description} </li>
                                 ))}
                             </ul>
                         </div>
                     )}
                     {activeSection === "prizes" && (
                         <div>
-                            <button onClick={() => setPrizeInput(" ")} className="bg-blue-500 text-white px-4 py-2 rounded">Add Prize</button>
-                            {prizeInput !== "" && (
-                                <div className="mt-4">
-                                    <input type="text" value={prizeInput} onChange={(e) => setPrizeInput(e.target.value)} className="px-4 py-2 rounded bg-gray-700 text-white" />
+                            <button type="button" onClick={() => setPrizeInput(prizeInput.title === "" && prizeInput.amount === "" && prizeInput.description === "" ? { title: " ", type: " ", description: " " } : prizeInput)} className="bg-blue-500 text-white px-4 py-2 rounded">Add Prize</button>
+
+                            {(prizeInput.title !== "" || prizeInput.amount !== "" && prizeInput.description !== "") && (
+                                <div className="mt-4 flex gap-4">
+                                    <input type="text" placeholder="title" value={prizeInput.title} onChange={(e) => setPrizeInput({ ...prizeInput, title: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white mb-2" />
+                                    <input type="text" placeholder="amount" value={prizeInput.amount} onChange={(e) => setPrizeInput({ ...prizeInput, amount: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
+                                    <input type="text" placeholder="description" value={prizeInput.description} onChange={(e) => setPrizeInput({ ...prizeInput, description: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
                                     <button onClick={addPrize} className="bg-green-500 text-white px-4 py-2 ml-2 rounded">Save</button>
                                 </div>
                             )}
                             <ul className="mt-4 text-white">
-                                {formData?.prizes?.map((prizes, index) => (
-                                    <li key={index}>{prizes}</li>
+                                {formData.prizes.map((prize, index) => (
+                                    <li key={index}>{prize.title}: {prize.amount} : {prize.description} </li>
                                 ))}
                             </ul>
                         </div>
                     )}
                     {activeSection === "faqs" && (
                         <div>
-                            <button onClick={() => setFaqInput(faqInput.question === "" && faqInput.answer === "" ? { question: " ", answer: " " } : faqInput)} className="bg-blue-500 text-white px-4 py-2 rounded">Add FAQ</button>
+                            <div className='flex gap-4'>
+                                <button type="button" onClick={() => setFaqInput(faqInput.question === "" && faqInput.answer === "" ? { question: " ", answer: " " } : faqInput)} className="bg-blue-500 text-white px-4 py-2 rounded">Add FAQ</button>
 
+                                <button
+                                    type="submit"
+                                    className="bg-green-400  font-bold text-black py-2 px-4 rounded-md transition duration-300 hover:bg-green-500"
+                                >
+                                    Submit
+                                </button>
+                            </div>
                             {(faqInput.question !== "" || faqInput.answer !== "") && (
-                                <div className="mt-4">
+                                <div className="mt-4 flex gap-4">
                                     <input type="text" placeholder="Question" value={faqInput.question} onChange={(e) => setFaqInput({ ...faqInput, question: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white mb-2" />
                                     <input type="text" placeholder="Answer" value={faqInput.answer} onChange={(e) => setFaqInput({ ...faqInput, answer: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
                                     <button onClick={addFaq} className="bg-green-500 text-white px-4 py-2 ml-2 rounded">Save</button>
@@ -340,23 +408,17 @@ const EventForm = () => {
                     <div className="flex justify-between gap-4 mt-6">
                         <button
                             type="button"
-                            className="bg-gray-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-gray-500"
+                            className=" nav font-thin bg-gray-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-gray-500"
                             onClick={handlePrevious}
                         >
                             Previous
                         </button>
                         <button
                             type="button"
-                            className="bg-blue-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-blue-500"
+                            className=" nav font-thin bg-blue-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-blue-500"
                             onClick={handleNext}
                         >
                             Next
-                        </button>
-                        <button
-                            type="submit"
-                            className="bg-green-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-green-500"
-                        >
-                            Submit
                         </button>
                     </div>
                 </form>
