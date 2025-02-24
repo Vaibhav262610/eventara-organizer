@@ -8,7 +8,7 @@ export default function page() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-800 p-6">
-            <h1 className="text-2xl font-bold mb-4">Attendance List</h1>
+            <h1 className="text-2xl font-bold mb-4">Participants Attendance List</h1>
             <ul className="bg-white p-4 rounded-md shadow-md w-full max-w-md">
                 {data?.map((record) => (
                     <li
