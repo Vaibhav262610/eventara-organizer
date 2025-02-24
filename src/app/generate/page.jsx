@@ -16,7 +16,7 @@ export default function GenerateQR() {
         setError(""); // Clear error if studentId is valid
 
         const timestamp = Date.now(); // ✅ Get current time
-        const encodedUrl = `${window.location.origin}/confirm-attendance/${studentId}?t=${timestamp}`; // ✅ URL for scanning
+        const encodedUrl = `https://eventara-user.vercel.app/confirm-attendance/${studentId}?t=${timestamp}`; // ✅ URL for scanning
         console.log("Generated URL:", encodedUrl); // Log generated URL
         setQrUrl(encodedUrl);
     };
