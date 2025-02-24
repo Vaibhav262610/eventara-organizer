@@ -36,6 +36,7 @@
     "react-qr-scanner": "^1.0.0-alpha.11",
     "react-qrcode-logo": "^3.0.0",
     "react-toastify": "^11.0.3",
+    "swr": "^2.3.2",
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
