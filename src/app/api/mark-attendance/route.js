@@ -1,10 +1,10 @@
-import { connectToDatabase } from "@/db/db";
+import { connectDb } from "@/db/db";
 import Attendance from "@/models/Attendance";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
     try {
-        await connectToDatabase();
+        await connectDb();
 
         // Extract studentId from the request body
         const { studentId } = await req.json();
