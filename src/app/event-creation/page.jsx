@@ -83,13 +83,13 @@ const EventForm = () => {
     };
     const addPrize = (e) => {
         e.preventDefault();
-        if (prizeInput.title && prizeInput.amount && prizeInput.description) {
+        if (prizeInput.title && prizeInput.amount && prizeInput.winners && prizeInput.description) {
             setFormData(prevState => ({
                 ...prevState,
                 // faqs: [...prevState.faqs, faqInput]
                 prizes: [...(prevState.prizes || []), prizeInput]
             }));
-            setPrizeInput({ title: "", amount: "", description: "" });
+            setPrizeInput({ title: "", amount: "", winners: "", description: "" });
         }
     };
 
@@ -345,18 +345,27 @@ const EventForm = () => {
                             <button type="button" onClick={() => setPartnerInput(partnerInput.name === "" && partnerInput.type === "" && partnerInput.description === "" ? { name: " ", type: " ", description: " " } : partnerInput)} className="bg-blue-500 text-white px-4 py-2 rounded">Add Partner</button>
 
                             {(partnerInput.name !== "" || partnerInput.type !== "" && partnerInput.description !== "") && (
-                                <div className="mt-4 flex gap-4">
+                                <div className="mt-4 flex gap-4 items-center">
+                                    <p className='text-white'>Name: </p>
                                     <input type="text" placeholder="name" value={partnerInput.name} onChange={(e) => setPartnerInput({ ...partnerInput, name: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white mb-2" />
+                                    <p className='text-white'>Type: </p>
                                     <input type="text" placeholder="type" value={partnerInput.type} onChange={(e) => setPartnerInput({ ...partnerInput, type: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
+                                    <p className='text-white'>Description: </p>
                                     <input type="text" placeholder="description" value={partnerInput.description} onChange={(e) => setPartnerInput({ ...partnerInput, description: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
                                     <button onClick={addPartner} className="bg-green-500 text-white px-4 py-2 ml-2 rounded">Save</button>
                                 </div>
                             )}
-                            <ul className="mt-4 text-white">
+                            <div className="w-fit text-white flex flex-col gap-4 mt-8">
                                 {formData.partners.map((partner, index) => (
-                                    <li key={index}>{partner.name}: {partner.type} : {partner.description} </li>
+                                    <div className='bg-white/10 shadow-lg rounded-md p-4'>
+                                        <h1 className='text-xl uppercase font-black'>{partner.name}</h1>
+                                        <div className='flex gap-4 text-red-400'>
+                                            <h1>Type: {partner.type}</h1>
+                                        </div>
+                                        <h1 className='mt-2 text-xs text-white/50 italic'>{partner.description}</h1>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </div>
                     )}
                     {activeSection === "prizes" && (
@@ -366,16 +375,27 @@ const EventForm = () => {
                             {(prizeInput.title !== "" || prizeInput.amount !== "" && prizeInput.description !== "") && (
                                 <div className="mt-4 flex gap-4">
                                     <input type="text" placeholder="title" value={prizeInput.title} onChange={(e) => setPrizeInput({ ...prizeInput, title: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white mb-2" />
-                                    <input type="text" placeholder="amount" value={prizeInput.amount} onChange={(e) => setPrizeInput({ ...prizeInput, amount: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
+                                    <input type="number" placeholder="winners" value={prizeInput.winners} onChange={(e) => setPrizeInput({ ...prizeInput, winners: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
+                                    <input type="number" placeholder="amount" value={prizeInput.amount} onChange={(e) => setPrizeInput({ ...prizeInput, amount: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
                                     <input type="text" placeholder="description" value={prizeInput.description} onChange={(e) => setPrizeInput({ ...prizeInput, description: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
                                     <button onClick={addPrize} className="bg-green-500 text-white px-4 py-2 ml-2 rounded">Save</button>
                                 </div>
                             )}
-                            <ul className="mt-4 text-white">
+                            {/* <ul className="mt-4 text-white"> */}
+                            <div className='w-fit text-white flex flex-col gap-4 mt-8'>
+
                                 {formData.prizes.map((prize, index) => (
-                                    <li key={index}>{prize.title}: {prize.amount} : {prize.description} </li>
+                                    <div className='bg-white/10 shadow-lg rounded-md p-4'>
+                                        <h1 className='text-xl uppercase font-black'>{prize.title}</h1>
+                                        <div className='flex gap-4 text-green-400'>
+                                            <h1>Prizes: {prize.winners}</h1>
+                                            <h1>${prize.amount}</h1>
+                                        </div>
+                                        <h1 className='mt-2 text-xs text-white/50 italic'>{prize.description}</h1>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
+                            {/* </ul> */}
                         </div>
                     )}
                     {activeSection === "faqs" && (
@@ -387,21 +407,28 @@ const EventForm = () => {
                                     type="submit"
                                     className="bg-green-400  font-bold text-black py-2 px-4 rounded-md transition duration-300 hover:bg-green-500"
                                 >
-                                    Submit
+                                    Publish Event
                                 </button>
                             </div>
                             {(faqInput.question !== "" || faqInput.answer !== "") && (
-                                <div className="mt-4 flex gap-4">
+                                <div className="mt-4 flex gap-4 items-center">
+                                    <p className='text-white'>Question: </p>
                                     <input type="text" placeholder="Question" value={faqInput.question} onChange={(e) => setFaqInput({ ...faqInput, question: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white mb-2" />
+                                    <p className='text-white'>Answer: </p>
                                     <input type="text" placeholder="Answer" value={faqInput.answer} onChange={(e) => setFaqInput({ ...faqInput, answer: e.target.value })} className="px-4 py-2 rounded bg-gray-700 text-white" />
                                     <button onClick={addFaq} className="bg-green-500 text-white px-4 py-2 ml-2 rounded">Save</button>
                                 </div>
                             )}
-                            <ul className="mt-4 text-white">
+                            <div className="w-fit text-white flex flex-col gap-4 mt-8">
                                 {formData.faqs.map((faq, index) => (
-                                    <li key={index}>{faq.question}: {faq.answer} </li>
+                                    <div className='bg-white/10 shadow-lg rounded-md p-4'>
+                                        <h1 className='text-lg text-red-400 uppercase font-black'>Question: {faq.question}</h1>
+                                        <div className='flex gap-4 text-green-400'>
+                                            <h1>Answer: {faq.answer}</h1>
+                                        </div>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </div>
                     )}
                     {/* Button Section */}

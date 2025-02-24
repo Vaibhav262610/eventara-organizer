@@ -34,27 +34,24 @@ const page = () => {
                     },
                 });
 
+                const data = await response.json();
+                console.log("API Response:", data); // Debugging log
+
                 if (!response.ok) {
-                    throw new Error("Invalid or expired token");
+                    throw new Error(data.message || "Invalid or expired token");
                 }
 
-                const data = await response.json();
                 setUser(data);
-
-                // Ensure profilePic is always set during first render
-                setProfilePic(
-                    randomProfilePics[
-                    Math.floor(Math.random() * randomProfilePics.length)
-                    ]
-                );
+                setProfilePic(randomProfilePics[Math.floor(Math.random() * randomProfilePics.length)]);
             } catch (error) {
                 console.error("Error fetching user data:", error);
+                setUser(null); // Ensure state is updated properly
             } finally {
                 setLoading(false);
             }
         };
+        fetchUserData()
 
-        fetchUserData();
     }, []); // Empty dependency array ensures this runs once
 
     if (loading) {

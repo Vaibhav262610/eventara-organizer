@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import connectToDatabase from "@/db/db"; // Adjust path based on your project structure
+import { connectToDatabase } from "@/db/db"; // Adjust path based on your project structure
 import mongoose from "mongoose";
 
 // Define Schema
