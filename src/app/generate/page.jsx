@@ -23,8 +23,8 @@ export default function GenerateQR() {
 
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
-            <h1 className="text-2xl font-bold mb-4 text-black">Generate Attendance QR Code</h1>
+        <div className="min-h-screen flex gap-6 flex-col items-center justify-center bg-white/30  p-6">
+            <h1 className="text-4xl font-thin mb-4 text-white nav">Generate Attendance QR Code</h1>
             <input
                 type="text"
                 value={studentId}
@@ -41,7 +41,7 @@ export default function GenerateQR() {
             </button>
 
             {qrUrl && (
-                <div className="mt-6 bg-white text-black p-4 rounded-lg shadow-md">
+                <div className="mt-6 bg-white text-black p-12 rounded-lg shadow-md">
                     <QRCodeCanvas value={qrUrl} size={200} />
                     <p className="mt-2 text-sm">Scan this QR within 5 minutes.</p>
                 </div>
